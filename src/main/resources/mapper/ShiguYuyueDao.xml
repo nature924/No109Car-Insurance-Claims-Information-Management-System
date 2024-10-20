@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ShiguYuyueDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.shigu_yuyue_uuid_number as shiguYuyueUuidNumber
+        ,a.shigu_id as shiguId
+        ,a.yonghu_id as yonghuId
+        ,a.yuangong_id as yuangongId
+        ,a.shigu_yuyue_text as shiguYuyueText
+        ,a.insert_time as insertTime
+        ,a.shigu_yuyue_yesno_types as shiguYuyueYesnoTypes
+        ,a.shigu_yuyue_yesno_text as shiguYuyueYesnoText
+        ,a.shigu_yuyue_shenhe_time as shiguYuyueShenheTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ShiguYuyueView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,shigu.yonghu_id as shiguYonghuId
+        ,shigu.yuangong_id as shiguYuangongId
+        ,shigu.shigu_name as shiguName
+        ,shigu.shigu_uuid_number as shiguUuidNumber
+        ,shigu.shigu_photo as shiguPhoto
+        ,shigu.shigu_file as shiguFile
+        ,shigu.shigu_types as shiguTypes
+        ,shigu.shigu_content as shiguContent
+        ,shigu.shigu_delete as shiguDelete
+        ,yonghu.yonghu_uuid_number as yonghuUuidNumber
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.new_money as newMoney
+        ,yuangong.yuangong_uuid_number as yuangongUuidNumber
+        ,yuangong.yuangong_name as yuangongName
+        ,yuangong.yuangong_phone as yuangongPhone
+        ,yuangong.yuangong_id_number as yuangongIdNumber
+        ,yuangong.yuangong_photo as yuangongPhoto
+        ,yuangong.yuangong_email as yuangongEmail
+
+        FROM shigu_yuyue  a
+        left JOIN shigu shigu ON a.shigu_id = shigu.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+        left JOIN yuangong yuangong ON a.yuangong_id = yuangong.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.shiguYuyueUuidNumber != '' and params.shiguYuyueUuidNumber != null and params.shiguYuyueUuidNumber != 'null' ">
+                and a.shigu_yuyue_uuid_number like CONCAT('%',#{params.shiguYuyueUuidNumber},'%')
+            </if>
+            <if test="params.shiguId != null and params.shiguId != ''">
+                and (
+                    a.shigu_id = #{params.shiguId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                    or shigu.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.yuangongId != null and params.yuangongId != ''">
+                and (
+                    a.yuangong_id = #{params.yuangongId}
+                    or shigu.yuangong_id = #{params.yuangongId}
+                )
+            </if>
+            <if test=" params.shiguYuyueText != '' and params.shiguYuyueText != null and params.shiguYuyueText != 'null' ">
+                and a.shigu_yuyue_text like CONCAT('%',#{params.shiguYuyueText},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.insertTime != null and params.insertTime != ''">
+                and a.insert_time = #{params.insertTime}
+            </if>
+            <if test="params.shiguYuyueYesnoTypes != null and params.shiguYuyueYesnoTypes != ''">
+                and a.shigu_yuyue_yesno_types = #{params.shiguYuyueYesnoTypes}
+            </if>
+            <if test=" params.shiguYuyueYesnoText != '' and params.shiguYuyueYesnoText != null and params.shiguYuyueYesnoText != 'null' ">
+                and a.shigu_yuyue_yesno_text like CONCAT('%',#{params.shiguYuyueYesnoText},'%')
+            </if>
+            <if test=" params.shiguYuyueShenheTimeStart != '' and params.shiguYuyueShenheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shigu_yuyue_shenhe_time) >= UNIX_TIMESTAMP(#{params.shiguYuyueShenheTimeStart}) ]]>
+            </if>
+            <if test=" params.shiguYuyueShenheTimeEnd != '' and params.shiguYuyueShenheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shigu_yuyue_shenhe_time) <= UNIX_TIMESTAMP(#{params.shiguYuyueShenheTimeEnd}) ]]>
+            </if>
+            <if test="params.shiguYuyueShenheTime != null and params.shiguYuyueShenheTime != ''">
+                and a.shigu_yuyue_shenhe_time = #{params.shiguYuyueShenheTime}
+            </if>
+
+                <!-- 判断事故调查的id不为空 -->
+            <if test=" params.shiguIdNotNull != '' and params.shiguIdNotNull != null and params.shiguIdNotNull != 'null' ">
+                and a.shigu_id IS NOT NULL
+            </if>
+            <if test=" params.shiguName != '' and params.shiguName != null and params.shiguName != 'null' ">
+                and shigu.shigu_name like CONCAT('%',#{params.shiguName},'%')
+            </if>
+            <if test=" params.shiguUuidNumber != '' and params.shiguUuidNumber != null and params.shiguUuidNumber != 'null' ">
+                and shigu.shigu_uuid_number like CONCAT('%',#{params.shiguUuidNumber},'%')
+            </if>
+            <if test="params.shiguTypes != null  and params.shiguTypes != ''">
+                and shigu.shigu_types = #{params.shiguTypes}
+            </if>
+
+            <if test=" params.shiguContent != '' and params.shiguContent != null and params.shiguContent != 'null' ">
+                and shigu.shigu_content like CONCAT('%',#{params.shiguContent},'%')
+            </if>
+            <if test="params.shiguDeleteStart != null  and params.shiguDeleteStart != '' ">
+                <![CDATA[  and shigu.shigu_delete >= #{params.shiguDeleteStart}   ]]>
+            </if>
+            <if test="params.shiguDeleteEnd != null  and params.shiguDeleteEnd != '' ">
+                <![CDATA[  and shigu.shigu_delete <= #{params.shiguDeleteEnd}   ]]>
+            </if>
+            <if test="params.shiguDelete != null  and params.shiguDelete != '' ">
+                and shigu.shigu_delete = #{params.shiguDelete}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(shigu.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(shigu.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.insertTime != null and params.insertTime != ''">
+                and a.insert_time = #{params.insertTime}
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuUuidNumber != '' and params.yonghuUuidNumber != null and params.yonghuUuidNumber != 'null' ">
+                and yonghu.yonghu_uuid_number like CONCAT('%',#{params.yonghuUuidNumber},'%')
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+            <if test="params.newMoney != null and params.newMoney != ''">
+                and a.new_money = #{params.newMoney}
+            </if>
+                <!-- 判断事故调查员的id不为空 -->
+            <if test=" params.yuangongIdNotNull != '' and params.yuangongIdNotNull != null and params.yuangongIdNotNull != 'null' ">
+                and a.yuangong_id IS NOT NULL
+            </if>
+            <if test=" params.yuangongUuidNumber != '' and params.yuangongUuidNumber != null and params.yuangongUuidNumber != 'null' ">
+                and yuangong.yuangong_uuid_number like CONCAT('%',#{params.yuangongUuidNumber},'%')
+            </if>
+            <if test=" params.yuangongName != '' and params.yuangongName != null and params.yuangongName != 'null' ">
+                and yuangong.yuangong_name like CONCAT('%',#{params.yuangongName},'%')
+            </if>
+            <if test=" params.yuangongPhone != '' and params.yuangongPhone != null and params.yuangongPhone != 'null' ">
+                and yuangong.yuangong_phone like CONCAT('%',#{params.yuangongPhone},'%')
+            </if>
+            <if test=" params.yuangongIdNumber != '' and params.yuangongIdNumber != null and params.yuangongIdNumber != 'null' ">
+                and yuangong.yuangong_id_number like CONCAT('%',#{params.yuangongIdNumber},'%')
+            </if>
+            <if test=" params.yuangongEmail != '' and params.yuangongEmail != null and params.yuangongEmail != 'null' ">
+                and yuangong.yuangong_email like CONCAT('%',#{params.yuangongEmail},'%')
+            </if>
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>

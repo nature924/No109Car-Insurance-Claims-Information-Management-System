@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.BaoxianOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.baoxian_order_uuid_number as baoxianOrderUuidNumber
+        ,a.baoxian_id as baoxianId
+        ,a.yonghu_id as yonghuId
+        ,a.baoxian_order_true_price as baoxianOrderTruePrice
+        ,a.baoxian_order_types as baoxianOrderTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.BaoxianOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,baoxian.baoxian_name as baoxianName
+        ,baoxian.baoxian_uuid_number as baoxianUuidNumber
+        ,baoxian.baoxian_photo as baoxianPhoto
+        ,baoxian.baoxian_types as baoxianTypes
+        ,baoxian.baoxian_new_money as baoxianNewMoney
+        ,baoxian.baoxian_content as baoxianContent
+        ,baoxian.baoxian_delete as baoxianDelete
+        ,yonghu.yonghu_uuid_number as yonghuUuidNumber
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.new_money as newMoney
+
+        FROM baoxian_order  a
+        left JOIN baoxian baoxian ON a.baoxian_id = baoxian.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.baoxianOrderUuidNumber != '' and params.baoxianOrderUuidNumber != null and params.baoxianOrderUuidNumber != 'null' ">
+                and a.baoxian_order_uuid_number like CONCAT('%',#{params.baoxianOrderUuidNumber},'%')
+            </if>
+            <if test="params.baoxianId != null and params.baoxianId != ''">
+                and (
+                    a.baoxian_id = #{params.baoxianId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.baoxianOrderTruePriceStart != null ">
+                <![CDATA[  and a.baoxian_order_true_price >= #{params.baoxianOrderTruePriceStart}   ]]>
+            </if>
+            <if test="params.baoxianOrderTruePriceEnd != null ">
+                <![CDATA[  and a.baoxian_order_true_price <= #{params.baoxianOrderTruePriceEnd}   ]]>
+            </if>
+            <if test="params.baoxianOrderTruePrice != null and params.baoxianOrderTruePrice != ''">
+                and a.baoxian_order_true_price = #{params.baoxianOrderTruePrice}
+            </if>
+            <if test="params.baoxianOrderTypes != null and params.baoxianOrderTypes != ''">
+                and a.baoxian_order_types = #{params.baoxianOrderTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.insertTime != null and params.insertTime != ''">
+                and a.insert_time = #{params.insertTime}
+            </if>
+
+                <!-- 判断保险的id不为空 -->
+            <if test=" params.baoxianIdNotNull != '' and params.baoxianIdNotNull != null and params.baoxianIdNotNull != 'null' ">
+                and a.baoxian_id IS NOT NULL
+            </if>
+            <if test=" params.baoxianName != '' and params.baoxianName != null and params.baoxianName != 'null' ">
+                and baoxian.baoxian_name like CONCAT('%',#{params.baoxianName},'%')
+            </if>
+            <if test=" params.baoxianUuidNumber != '' and params.baoxianUuidNumber != null and params.baoxianUuidNumber != 'null' ">
+                and baoxian.baoxian_uuid_number like CONCAT('%',#{params.baoxianUuidNumber},'%')
+            </if>
+            <if test="params.baoxianTypes != null  and params.baoxianTypes != ''">
+                and baoxian.baoxian_types = #{params.baoxianTypes}
+            </if>
+
+            <if test="params.baoxianNewMoneyStart != null ">
+                <![CDATA[  and baoxian.baoxian_new_money >= #{params.baoxianNewMoneyStart}   ]]>
+            </if>
+            <if test="params.baoxianNewMoneyEnd != null ">
+                <![CDATA[  and baoxian.baoxian_new_money <= #{params.baoxianNewMoneyEnd}   ]]>
+            </if>
+            <if test="params.baoxianNewMoney != null and params.baoxianNewMoney != ''">
+                and a.baoxian_new_money = #{params.baoxianNewMoney}
+            </if>
+            <if test=" params.baoxianContent != '' and params.baoxianContent != null and params.baoxianContent != 'null' ">
+                and baoxian.baoxian_content like CONCAT('%',#{params.baoxianContent},'%')
+            </if>
+            <if test="params.baoxianDeleteStart != null  and params.baoxianDeleteStart != '' ">
+                <![CDATA[  and baoxian.baoxian_delete >= #{params.baoxianDeleteStart}   ]]>
+            </if>
+            <if test="params.baoxianDeleteEnd != null  and params.baoxianDeleteEnd != '' ">
+                <![CDATA[  and baoxian.baoxian_delete <= #{params.baoxianDeleteEnd}   ]]>
+            </if>
+            <if test="params.baoxianDelete != null  and params.baoxianDelete != '' ">
+                and baoxian.baoxian_delete = #{params.baoxianDelete}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(baoxian.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(baoxian.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.insertTime != null and params.insertTime != ''">
+                and a.insert_time = #{params.insertTime}
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuUuidNumber != '' and params.yonghuUuidNumber != null and params.yonghuUuidNumber != 'null' ">
+                and yonghu.yonghu_uuid_number like CONCAT('%',#{params.yonghuUuidNumber},'%')
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+            <if test="params.newMoney != null and params.newMoney != ''">
+                and a.new_money = #{params.newMoney}
+            </if>
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>

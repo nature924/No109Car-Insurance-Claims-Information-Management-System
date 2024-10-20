@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.BaoxianDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.baoxian_name as baoxianName
+        ,a.baoxian_uuid_number as baoxianUuidNumber
+        ,a.baoxian_photo as baoxianPhoto
+        ,a.baoxian_types as baoxianTypes
+        ,a.baoxian_new_money as baoxianNewMoney
+        ,a.baoxian_content as baoxianContent
+        ,a.baoxian_delete as baoxianDelete
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.BaoxianView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+
+        FROM baoxian  a
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.baoxianName != '' and params.baoxianName != null and params.baoxianName != 'null' ">
+                and a.baoxian_name like CONCAT('%',#{params.baoxianName},'%')
+            </if>
+            <if test=" params.baoxianUuidNumber != '' and params.baoxianUuidNumber != null and params.baoxianUuidNumber != 'null' ">
+                and a.baoxian_uuid_number like CONCAT('%',#{params.baoxianUuidNumber},'%')
+            </if>
+            <if test="params.baoxianTypes != null and params.baoxianTypes != ''">
+                and a.baoxian_types = #{params.baoxianTypes}
+            </if>
+            <if test="params.baoxianNewMoneyStart != null ">
+                <![CDATA[  and a.baoxian_new_money >= #{params.baoxianNewMoneyStart}   ]]>
+            </if>
+            <if test="params.baoxianNewMoneyEnd != null ">
+                <![CDATA[  and a.baoxian_new_money <= #{params.baoxianNewMoneyEnd}   ]]>
+            </if>
+            <if test="params.baoxianNewMoney != null and params.baoxianNewMoney != ''">
+                and a.baoxian_new_money = #{params.baoxianNewMoney}
+            </if>
+            <if test=" params.baoxianContent != '' and params.baoxianContent != null and params.baoxianContent != 'null' ">
+                and a.baoxian_content like CONCAT('%',#{params.baoxianContent},'%')
+            </if>
+            <if test="params.baoxianDeleteStart != null and params.baoxianDeleteStart != ''">
+                <![CDATA[  and a.baoxian_delete >= #{params.baoxianDeleteStart}   ]]>
+            </if>
+            <if test="params.baoxianDeleteEnd != null and params.baoxianDeleteEnd != ''">
+                <![CDATA[  and a.baoxian_delete <= #{params.baoxianDeleteEnd}   ]]>
+            </if>
+             <if test="params.baoxianDelete != null and params.baoxianDelete != ''">
+                and a.baoxian_delete = #{params.baoxianDelete}
+             </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.insertTime != null and params.insertTime != ''">
+                and a.insert_time = #{params.insertTime}
+            </if>
+
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>
